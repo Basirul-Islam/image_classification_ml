@@ -11,7 +11,7 @@ Original file is located at
 #drive.mount('/content/drive')
 
 import os
-
+import joblib
 import seaborn
 from skimage.io import imread
 from skimage.filters import gaussian
@@ -37,19 +37,21 @@ def read_data(datadir, categories, height, width):
     # class_directories = os.listdir(path)
     for category in categories:
       count = 0
-      print(f'loading... category : {category}')
+      print(f'Readingding... category : {category}')
       path=os.path.join(datadir,category)
       for img in os.listdir(path):
           count = count + 1
-          if(count>10):
+          #if(count>20): break
+          if(count>30 and datadir != 'TestData'):
               break
+          elif(count>100): break
           img_array = imread(os.path.join(path,img), True)
           img_array = gaussian(img_array, sigma=0.4)
           img_resized = resize(img_array,(height, width), mode='constant', preserve_range=True)
           
           flat_data_arr.append(img_resized)
           target_arr.append(categories.index(category))
-      print(f'loaded category: {category} successfully')
+      print(f'Readded category: {category} successfully')
     
     return flat_data_arr, target_arr
 
@@ -85,7 +87,7 @@ def get_lbp_prediction():
     # read data
     data, labels = read_data('DataSet/', categories, height, width)
 
-    X_train, X_test, y_train, y_test = train_test_split(data, labels, test_size=0.20, random_state=seed)
+    X_train, X_test, y_train, y_test = train_test_split(data, labels, test_size=0.10, random_state=seed)
 
     X_train_feature, X_test_feature = get_histogram_feature(X_train, X_test)
     # experiment with lbp
@@ -102,7 +104,8 @@ def get_lbp_prediction():
     model = GridSearchCV(svc, param_grid)
 
     model.fit(X_train_feature, y_train)
-    print('The Model is trained well with the given images')
+    #joblib.dump(model, 'saved_models/lbp.pkl')
+    print('The Model is trained well with the given images and saved')
 
     from sklearn.metrics import classification_report,accuracy_score
     from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
@@ -110,6 +113,16 @@ def get_lbp_prediction():
     y_pred = model.predict(X_test_feature)
     # y_true = y_pred
     cm = confusion_matrix(y_test, y_pred)
+    '''import matplotlib
+    matplotlib.use('TkAgg')
+    names = ['Boot', 'Shoe', 'Sandal']
+    confusion_df = pd.DataFrame(cm, index=names, columns=names)
+    plt.figure(figsize=(5, 5))
+    seaborn.heatmap(confusion_df, annot=True, annot_kws={"size": 12}, cmap='YlGnBu', cbar=False, square=True, fmt='.2f')
+    plt.ylabel(r'True Value', fontsize=14)
+    plt.xlabel(r'Predicted Value', fontsize=14)
+    plt.tick_params(labelsize=12)
+    plt.show()'''
     #disp = ConfusionMatrixDisplay(confusion_matrix = cm, display_labels = categories)
     #disp.plot()
 
@@ -120,28 +133,6 @@ def get_lbp_prediction():
     print(np.array(y_test))
     print(f"The model is {accuracy_score(y_pred, y_test)*100}% accurate")
 
-    # from skimage.color import rgba2rgb
-    # # url=input('Enter URL of Image :')
-    # # categories=['butterfly','cow','panda']
-    # img=imread('/content/drive/MyDrive/animal/test/deer/36e6c35541.jpg', as_gray=True)
-
-    # # plt.show()
-    # # img_array = rgb2gray((img))
-    # img = gaussian(img, sigma=.4)
-    # plt.imshow(img)
-    # img_resized = resize(img,(height,width), mode='constant', preserve_range=True)
-    # # img_hog = hog_func(img_resized)
-    # # img_resize=resize(img,(150,150,3))
-    # # l=[img_hog.flatten()]
-    # # l_pca = pca.transform(l)
-    # hist_feature = get_hist_from_lbph(img_resized).reshape(1, -1)#get_histogram_feature(img_resized, None)
-
-    # probability = model.predict_proba(hist_feature)
-    # for ind, val in enumerate(categories):
-    #     print(f'{val} = {probability[0][ind]*100}%')
-
-    # print("The predicted image is : "+ categories[model.predict(hist_feature)[0]])
-
     test_data, test_labels = read_data('TestData', categories, height, width)
 
     features =  []
@@ -151,31 +142,23 @@ def get_lbp_prediction():
     y_pred = model.predict(features)
 
     cm = confusion_matrix(test_labels, y_pred)
-    #disp = ConfusionMatrixDisplay(confusion_matrix = cm, display_labels = categories)
-    #disp.plot()
+
     print("The predicted Data is :")
     print(y_pred)
     print("The actual data is:")
     print(np.array(test_labels))
     print(f"The model is {accuracy_score(y_pred, test_labels)*100}% accurate")
 
-    # Confusion Matrix for TFIDF with additional features
-    from sklearn.metrics import confusion_matrix
+
     import matplotlib
     matplotlib.use('TkAgg')
-    #import matplotlib.pyplot as plt
-    confusion_matrix = cm
-    # matrix_proportions = np.zeros((3, 3))
-    # for i in range(0, 3):
-    #     matrix_proportions[i, :] = confusion_matrix[i, :] / float(confusion_matrix[i, :].sum())
+
     names = ['Boot','Shoe','Sandal']
     confusion_df = pd.DataFrame(cm, index=names, columns=names)
     plt.figure(figsize=(5, 5))
+    plt.title('LBP')
     seaborn.heatmap(confusion_df, annot=True, annot_kws={"size": 12}, cmap='YlGnBu', cbar=False, square=True, fmt='.2f')
     plt.ylabel(r'True Value', fontsize=14)
     plt.xlabel(r'Predicted Value', fontsize=14)
     plt.tick_params(labelsize=12)
     plt.show()
-    # from sklearn.metrics import plot_confusion_matrix
-    # plot_confusion_matrix(clf, X_test, y_test)
-    # plt.show()

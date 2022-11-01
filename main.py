@@ -2,15 +2,16 @@
 
 # Press Shift+F10 to execute it or replace it with your code.
 # Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
-import cv2
-import os
+'''import cv2
+import os'''
 
 import hog
 import lbp
 import hough
+import output
 
 
-def load_images_from_folder(folder):
+'''def load_images_from_folder(folder):
     images = []
     count = 0
     for filename in os.listdir(folder):
@@ -37,22 +38,22 @@ def load_images_from_folder(folder):
             # and memory
             #cv2.destroyAllWindows()
 
-            '''gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+            gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
             cv2.imshow('Original image', img)
             cv2.imshow('Gray image', gray)
 
             cv2.waitKey(0)
-            cv2.destroyAllWindows()'''
+            cv2.destroyAllWindows()
 
 
             images.append(img)
-    return images
+    return images'''
 
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
 
-    boot_images = load_images_from_folder("DataSet/Boot")
+    #boot_images = load_images_from_folder("DataSet/Boot")
     #sandal_images = load_images_from_folder("DataSet/Sandal")
     #shoe_images = load_images_from_folder("DataSet/Shoe")
 
@@ -63,4 +64,5 @@ if __name__ == '__main__':
     lbp.get_lbp_prediction()
     #hog.get_hog_prediction()
     #hough.get_hough_result()
+    #output.get_lbp_reports()
 # See PyCharm help at https://www.jetbrains.com/help/pycharm/
